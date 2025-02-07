@@ -31,7 +31,7 @@ def my_imfilter(image, kernel):
     pad_w = kernel.shape[1] // 2
 
     if image.ndim == 2:
-        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='reflect')
+        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='edge')
         m, n = image.shape
         filtered_image = np.zeros((m, n), dtype=np.float32)
         
@@ -40,7 +40,7 @@ def my_imfilter(image, kernel):
                 filtered_image += kernel[i, j] * padded_image[i: i + m, j: j + n]
     
     elif image.ndim == 3:
-        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode='reflect')
+        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode='edge')
         m, n, c = image.shape
         filtered_image = np.zeros((m, n, c), dtype=np.float32)
         
