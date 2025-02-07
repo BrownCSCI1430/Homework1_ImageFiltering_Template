@@ -21,14 +21,37 @@ def my_imfilter(image, kernel):
     Errors if:
     - filter/kernel has any even dimension -> raise an Exception with a suitable error message.
     """
-    filtered_image = np.zeros(image.shape)
+    #filtered_image = np.zeros(image.shape)
 
     ##################
-    # Your code here #
-    print('my_imfilter function in student.py needs to be implemented')
-    ##################
+    if kernel.shape[0] % 2 == 0 or kernel.shape[1] % 2 == 0:
+        raise Exception("Kernel dimensions must be odd.")
+    
+    pad_h = kernel.shape[0] // 2
+    pad_w = kernel.shape[1] // 2
 
+    if image.ndim == 2:
+        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='reflect')
+        m, n = image.shape
+        filtered_image = np.zeros((m, n), dtype=np.float32)
+        
+        for i in range(kernel.shape[0]):
+            for j in range(kernel.shape[1]):
+                filtered_image += kernel[i, j] * padded_image[i: i + m, j: j + n]
+    
+    elif image.ndim == 3:
+        padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w), (0, 0)), mode='reflect')
+        m, n, c = image.shape
+        filtered_image = np.zeros((m, n, c), dtype=np.float32)
+        
+        for i in range(kernel.shape[0]):
+            for j in range(kernel.shape[1]):
+                filtered_image += kernel[i, j] * padded_image[i: i + m, j: j + n, :]
+    else:
+        raise Exception("Image can only be 2D or 3D.")
+    
     return filtered_image
+    ##################
 
 """
 EXTRA CREDIT placeholder function
@@ -82,16 +105,21 @@ def gen_hybrid_image(image1, image2, cutoff_frequency):
     kernel = np.outer(probs, probs)
 
     # Your code here
-    low_frequencies = np.zeros(image1.shape) # Replace with your implementation
+    #low_frequencies = np.zeros(image1.shape) # Replace with your implementation
+    low_frequencies = my_imfilter(image1, kernel)
 
     # (2) Remove the low frequencies from image2. The easiest way to do this is to
     #     subtract a blurred version of image2 from the original version of image2.
     #     This will give you an image centered at zero with negative values.
     # Your code here #
-    high_frequencies = np.zeros(image1.shape) # Replace with your implementation
+    image2_low = my_imfilter(image2, kernel)
+    high_frequencies = image2 - image2_low
+    #high_frequencies = np.zeros(image1.shape) # Replace with your implementation
 
     # (3) Combine the high frequencies and low frequencies, and make sure the hybrid image values are within the range 0.0 to 1.0
     # Your code here
-    hybrid_image = np.zeros(image1.shape) # Replace with your implementation
+    hybrid_image = low_frequencies + high_frequencies
+    hybrid_image = np.clip(hybrid_image, 0.0, 1.0)
+    #hybrid_image = np.zeros(image1.shape) # Replace with your implementation
 
     return low_frequencies, high_frequencies, hybrid_image
