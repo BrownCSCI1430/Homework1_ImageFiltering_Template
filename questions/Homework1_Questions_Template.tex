@@ -422,6 +422,86 @@ Padding is a useful operation to help us produce a convolved image equal in size
 
 \pagebreak
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{question}[points=4,drawbox=false]
+\textbf{Filter optimization.} In the code part of Homework 1, you will be asked, given a target image and the original image, to find an optimized kernel of a fixed shape that will produce the target image. Let $T \in \mathbb{R}_{m\times n}$ be the target image, $I \in \mathbb{R}_{m\times n}$ and our kernel $f \in  \mathbb{R}_{i \times j}$ We are solving an ordinary least squares problem: 
+
+$$Af = T$$
+
+Where we are finding the filter $f$ that when convolved with our input image $I$ will produce the target image $T$. Here the target image is our response variable, and we are searching for the weights of our filter f. We know that since convolution is a linear operation, it can be represented as a linear equation:
+
+$$f * I =  \sum_{k,l}{f[k,l]I[m-k,n-l]} = Af$$
+
+Where A can be constructed knowing that the k x l kernel multiplies each k x l 'patch' in I.  So, to create this multiplication in matrix form each row of $A$ must correspond to that patch. So $A \in \mathbb{R}_{(m \cdot n) \times (k \cdot l)} $ and each $A_{m,n}$ should be the k x l patch 
+
+
+\end{question}
+\begin{subquestion}
+    Write the pseudocode for creating the matrix A as described above. 
+\end{subquestion}
+
+\begin{answer}
+ \begin{python}
+for m in range(H):
+    for n in range(W):
+        # flatten patch 
+        patch = I[m:m+K, n:n+L].flatten()
+        # set row to equal the patch 
+        A[row, :] = patch
+        row += 1
+ \end{python}
+\end{answer}
+
+\begin{subquestion}[points = 2] 
+
+Write down the loss function using least squares in terms of the original m x n image I, the m x n target image T, and our filter f. We want to minimize the difference between the target image and our image convolved with the filter
+\end{subquestion}
+\begin{answer}
+$$L(f) = \frac{1}{2} \|(f * I) - T \|_2^2$$
+\end{answer}
+\begin{subquestion}[points=2]
+Now take the derivative of the loss function with respect to one of your filter weights. 
+$$\frac{\partial{L(f)}}{\partial{f[k,l]}}$$
+\textbf{Hint: } When taking the derivative, consider the case where the indices k, l do not match the indices in the sums.
+\end{subquestion}
+\begin{answer}
+$$\frac{\partial{L}}{\partial{f[k,l]}}= \frac{\partial}{\partial{f}}\frac{1}{2} \|(f * I) - T \|_2^2$$
+
+Recall definition of convolution 
+$$f * I = h[m,n] = \sum_{k,l}{f[k,l]I[m-k,n-l]}$$
+
+Substitute the convolution into the equation. Since we are indexing by m and n, summed over both row and columns. 
+
+$$\frac{\partial{L(f)}}{\partial{f[k,l]}}= \frac{\partial}{\partial{f[k, l]}}\frac{1}{2}\sum_{m,n}(h[m,n]-T[m,n])^2$$
+
+Take the partial derivative and use chain rule. Since only h[m,n] depends on f[k,l] we only have to multiply by the partial derivative of h w.r.t f[k,l]
+
+$$\frac{\partial{L(f)}}{\partial{f[k,l]}}= \sum_{m,n}(h[m,n]-T[m,n]) \cdot \frac{\partial{h[m,n]}}{\partial{f[k,l]}}$$
+
+Now we have to take the derivative of convolution with respect to the weights. Expanding that calculation out looks like: 
+
+$$\frac{\partial{h[m,n]}}{\partial{f[k,l]}} = \frac{\partial}{\partial{f[k,l]}}\sum_{i,j}{f[i,j]I[m-i,n-j]}$$
+
+For all entries where $i \neq k$ and $j\neq l$ the derivative will be 0 since we are taking the derivative w.r.t the k,l entry of the filter. So our summation disappears and we are left with: 
+
+$$\frac{\partial{h[m,n]}}{\partial{f[k,l]}} = \frac{\partial}{\partial{f[k,l]}}f[k,l]I[m-k][n-l]$$
+
+Taking the derivative we have: 
+
+$$\frac{\partial{h[m,n]}}{\partial{f[k,l]}} = I[m-k][n-l]$$
+
+Substituting that back into our original loss equation we are left with 
+
+$$\frac{\partial{L(f)}}{\partial{f[k,l]}}= \sum_{m,n}{(h[m,n]-T[m,n])} \cdot I[m-k, n-l]$$
+
+This is what linear square regression does to obtain the normal equation although the connection is a bit unclear 
+
+$$A^T(Af - T) = A^TAf - A^TT$$
+$$A^TAf = A^TT$$
+
+\end{answer}
+\pagebreak
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section*{Feedback? (Optional)}
 We appreciate your feedback on how to improve the course. You can provide anonymous feedback through \href{https://forms.gle/Eu5jJbDUmLknAyJV9}{this form} which can be accessed using your Brown account (your identity will not be collected). If you have urgent non-anonymous comments/questions, please email the instructor. 
