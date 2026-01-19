@@ -6,7 +6,6 @@ import numpy as np
 from numpy import pi, exp, sqrt
 from skimage import io, img_as_ubyte, img_as_float32
 from skimage.transform import rescale, resize
-from PIL import Image
 import math
 
 
@@ -40,10 +39,8 @@ def vis_hybrid_image(hybrid_image):
 def load_image(path):
     return img_as_float32(io.imread(path))
 
-
 def save_image(path, im):
     return io.imsave(path, img_as_ubyte(im.copy()))
-
 
 # given two differently sized images, resize them so they have the same shape
 def equalize_image_sizes(im_one, im_two):
