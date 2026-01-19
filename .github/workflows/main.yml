@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Enable Page Export
-        run: sed -i 's/\\documentclass{csci1430}/\\documentclass[exportexpectedpages]{csci1430}/' Homework1_Questions_Template.tex
+        run: sed -i 's/\\documentclass{csci1430}/\\documentclass[exportexpectedpages]{csci1430}/' questions/Homework1_Questions_Template.tex
 
       - name: Generate Page Map (Compile 1)
         uses: dante-ev/latex-action@2025-A
@@ -24,7 +24,7 @@ jobs:
           args: -interaction=nonstopmode
 
       - name: Disable Page Export
-        run: sed -i 's/\\documentclass[exportexpectedpages]{csci1430}/\\documentclass{csci1430}/' Homework1_Questions_Template.tex
+        run: sed -i 's/\\documentclass[exportexpectedpages]{csci1430}/\\documentclass{csci1430}/' questions/Homework1_Questions_Template.tex
 
       - name: Generate Final PDF (Compile 2)
         uses: dante-ev/latex-action@2025-A
