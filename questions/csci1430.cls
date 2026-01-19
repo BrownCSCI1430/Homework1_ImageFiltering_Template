@@ -6,6 +6,10 @@
 
 \NeedsTeXFormat{LaTeX2e}[2023-11-01]
 \ProvidesClass{csci1430}[2026/01/19 CSC1430 LaTeX Questions v0.2]
+
+\newif\if@csci@export
+\DeclareOption{exportexpectedpages}{\@csci@exporttrue}
+
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions
 \LoadClass[11pt]{article}
@@ -73,6 +77,9 @@
 \prop_new:N \g_expected_page_labels_prop
 % Expected-page export controls
 \bool_new:N \g_export_expected_pages_bool
+\if@csci@export
+    \bool_gset_true:N \g_export_expected_pages_bool
+\fi
 \tl_new:N \g_expected_pages_file_tl
 \iow_new:N \g_expected_pages_iow
 % Persistent point-summary state (stored via .aux between runs)
@@ -171,22 +178,6 @@
     \tl_set:Nn \l_tmpa_tl { #1 }
     \tl_remove_once:Nn \l_tmpa_tl { marker: }
     \SetExpectedPageLabel{#2}{\l_tmpa_tl}
-}
-
-\NewDocumentCommand{\LoadExpectedPages}{m}
-{
-    \bool_if:NF \g_export_expected_pages_bool
-    {
-        \InputIfFileExists{#1}{}{}
-        \compute_expected_total_pages:
-        \fill_missing_expected_page_labels:
-    }
-}
-
-\NewDocumentCommand{\EnableExpectedPagesExport}{m}
-{
-    \bool_gset_true:N \g_export_expected_pages_bool
-    \tl_gset:Nn \g_expected_pages_file_tl { #1 }
 }
 
 \cs_new_protected:Npn \register_page_marker:nn #1#2
@@ -497,8 +488,24 @@
 
 \AtBeginDocument
 {
-    \bool_if:NT \g_export_expected_pages_bool
-    { \iow_open:Nn \g_expected_pages_iow { \g_expected_pages_file_tl } }
+    % Handle "Expected Pages" logic
+    % If [exportexpectedpages] option is set:
+    %   1. We are in TA-mode generating the page mapping file.
+    %   2. Open the output stream to write the mapping.
+    \bool_if:NTF \g_export_expected_pages_bool
+    {
+        \tl_gset:Nn \g_expected_pages_file_tl { csci1430_expectedpages.tex }
+        \iow_open:Nn \g_expected_pages_iow { \g_expected_pages_file_tl }
+    }
+    % If [exportexpectedpages] is NOT set (Student/Normal mode):
+    %   1. Try to load the pre-generated 'csci1430_expectedpages.tex' file.
+    %   2. Calculate the total expected pages based on that file.
+    %   3. Fill in any gaps in the page labels to ensure footer continuity.
+    {
+        \InputIfFileExists{csci1430_expectedpages.tex}{}{}
+        \compute_expected_total_pages:
+        \fill_missing_expected_page_labels:
+    }
 }
 
 \AtEndDocument
@@ -513,6 +520,7 @@
 % The document instructions
 \NewDocumentCommand{\writeinstructions}{}
 {
+    \PlacePageMarker{instructions}{instructions}
     \section*{Template Instructions}
 
     This document is a template with specific answer regions and a fixed number of pages. Given large class sizes and limited TA time, the template helps the course staff to grade efficiently and still focus on the content of your submissions. Please help us in this task:
@@ -540,13 +548,23 @@
         \item \QuestionPointsSummary
         \item Include code, images, and equations where appropriate.
     \end{itemize}
+}
 
-    \PlacePageMarker{instructions}{instructions}
+
+\NewDocumentCommand{\writefeedback}{}
+{
+    \PlacePageMarker{feedback}{feedback}
+    \section*{Feedback? (Optional)}
+    We appreciate your feedback on how to improve the course. You can provide anonymous feedback through \href{https://forms.gle/Eu5jJbDUmLknAyJV9}{this form} which can be accessed using your Brown account (your identity will not be collected). If you have urgent non-anonymous comments/questions, please email the instructor.
 }
 
 
 \date{}
 \author{CSCI 1430}
+
+% Force the title page to use the fancy style defined below
+\let\oldmaketitle\maketitle
+\renewcommand{\maketitle}{\oldmaketitle\thispagestyle{fancy}}
 
 \pagestyle{fancy}
 \fancyhf{}

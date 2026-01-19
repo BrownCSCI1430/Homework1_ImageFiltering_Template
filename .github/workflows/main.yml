@@ -17,7 +17,7 @@ jobs:
           sed -i 's/^%\\EnableExpectedPagesExport/\\EnableExpectedPagesExport/' questions/Homework1_Questions_Template.tex
 
       - name: Generate Page Map (Compile 1)
-        uses: dante-ev/latex-action@2021-A
+        uses: dante-ev/latex-action@2025-A
         with:
           root_file: Homework1_Questions_Template.tex
           working_directory: questions
@@ -29,7 +29,7 @@ jobs:
           sed -i 's/^\\EnableExpectedPagesExport/%\\EnableExpectedPagesExport/' questions/Homework1_Questions_Template.tex
 
       - name: Generate Final PDF (Compile 2)
-        uses: dante-ev/latex-action@2021-A
+        uses: dante-ev/latex-action@2025-A
         with:
           root_file: Homework1_Questions_Template.tex
           working_directory: questions
