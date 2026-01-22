@@ -12,10 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Enable Page Export
+      - name: Enable Expected Pages Export
         run: sed -i 's/\\documentclass{csci1430}/\\documentclass[exportexpectedpages]{csci1430}/' questions/Homework1_Questions_Template.tex
 
-      - name: Generate Page Map (Compile 1)
+      - name: Generate Expected Pages Map (Compile 1)
         uses: dante-ev/latex-action@2025-A
         with:
           root_file: Homework1_Questions_Template.tex
@@ -23,10 +23,10 @@ jobs:
           compiler: pdflatex
           args: -interaction=nonstopmode
 
-      - name: Disable Page Export
-        run: sed -i 's/\\documentclass[exportexpectedpages]{csci1430}/\\documentclass{csci1430}/' questions/Homework1_Questions_Template.tex
+      - name: Disable Expected Pages Export
+        run: sed -i 's/\\documentclass\[exportexpectedpages\]{csci1430}/\\documentclass{csci1430}/' questions/Homework1_Questions_Template.tex
 
-      - name: Generate Final PDF (Compile 2)
+      - name: Final PDF Compilation
         uses: dante-ev/latex-action@2025-A
         with:
           root_file: Homework1_Questions_Template.tex
@@ -34,10 +34,10 @@ jobs:
           compiler: latexmk
           args: -pdf -latexoption=-file-line-error -latexoption=-interaction=nonstopmode
 
-      - name: Commit and Push
+      - name: Commit and Push PDF and Expected Pages
         run: |
-          git add questions/Homework1_Questions_Template.pdf questions/csci1430_expectedpages.tex
           git config --local user.name 'github-actions-bot'
           git config --local user.email 'cs1430-github-actions[bot]@users.noreply.github.com'
-          git commit -m "Compile written PDF and update page map [skip ci]" || echo "No changes to commit"
+          git add questions/Homework1_Questions_Template.pdf questions/csci1430_expectedpages.tex
+          git diff-index --quiet HEAD || git commit -m "Auto-update PDF and Expected Pages [skip ci]"
           git push

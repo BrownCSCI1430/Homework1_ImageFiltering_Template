@@ -4,8 +4,6 @@
 # CS 4495/6476 @ Georgia Tech
 import numpy as np
 from numpy import pi, exp, sqrt
-from skimage import io, img_as_ubyte, img_as_float32
-from skimage.transform import rescale
 
 def my_imfilter(image, kernel):
     """
@@ -76,7 +74,8 @@ def gen_hybrid_image(image1, image2, cutoff_frequency):
     # Steps:
     # (1) Remove the high frequencies from image1 by blurring it. The amount of
     #     blur that works best will vary with different image pairs
-    # generate a 1x(2k+1) gaussian kernel with mean=0 and sigma = s, see https://stackoverflow.com/questions/17190649/how-to-obtain-a-gaussian-filter-in-python
+    
+    # Generate a 1x(2k+1) gaussian kernel with mean = 0 and sigma = s
     s, k = cutoff_frequency, cutoff_frequency*2
     probs = np.asarray([exp(-z*z/(2*s*s))/sqrt(2*pi*s*s) for z in range(-k,k+1)], dtype=np.float32)
     kernel = np.outer(probs, probs)
@@ -87,10 +86,13 @@ def gen_hybrid_image(image1, image2, cutoff_frequency):
     # (2) Remove the low frequencies from image2. The easiest way to do this is to
     #     subtract a blurred version of image2 from the original version of image2.
     #     This will give you an image centered at zero with negative values.
+    
     # Your code here #
     high_frequencies = np.zeros(image1.shape) # Replace with your implementation
 
-    # (3) Combine the high frequencies and low frequencies, and make sure the hybrid image values are within the range 0.0 to 1.0
+    # (3) Combine the high frequencies and low frequencies, and make sure the hybrid
+    #     image values are within the range 0.0 to 1.0
+    
     # Your code here
     hybrid_image = np.zeros(image1.shape) # Replace with your implementation
 
