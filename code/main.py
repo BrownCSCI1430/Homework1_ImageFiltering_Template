@@ -66,6 +66,7 @@ def main():
         else:
             print('running hybrid image generation tests on images ' + img1 + ' and ' + img2)
             hybrid_img_generation(img1, img2)
+    
     elif args.task == 'kernel':
         input_image = args.image
         if not os.path.exists(input_image):

@@ -3,7 +3,6 @@
 # by James Hays for CSCI 1430 @ Brown and
 # CS 4495/6476 @ Georgia Tech
 import os
-from skimage.transform import rescale
 import numpy as np
 from numpy import pi, exp, sqrt
 import matplotlib.pyplot as plt
@@ -19,92 +18,81 @@ def filter_test(img_path):
     if not os.path.exists(resultsDir):
         os.mkdir(resultsDir)
 
+    # =========================================================================
+    # LOAD IMAGE
+    # =========================================================================
     test_image = load_image(img_path)
-    test_image = rescale(test_image, 0.7, mode='reflect', multichannel=True)
 
-    '''
-    Identity filter
-    This filter should do nothing regardless of the padding method you use.
-    '''
+    # =========================================================================
+    # APPLY FILTERS
+    # =========================================================================
+    # Identity filter - does nothing regardless of padding method
     identity_filter = np.asarray(
         [[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=np.float32)
     identity_image = my_imfilter(test_image, identity_filter)
-    plt.imshow(identity_image, cmap='gray')
-    plt.show()
-    done = save_image('../results/identity_image.jpg', identity_image)
 
-
-    '''
-    Small blur with a box filter
-    This filter should remove some high frequencies.
-    '''
-    blur_filter = np.ones((3, 3), dtype=np.float32)
-    # making the filter sum to 1
+    # Small box blur filter (5x5) - removes some detail
+    blur_filter = np.ones((5, 5), dtype=np.float32)
     blur_filter /= np.sum(blur_filter, dtype=np.float32)
     blur_image = my_imfilter(test_image, blur_filter)
-    plt.imshow(blur_image,cmap='gray')
-    plt.show()
-    done = save_image(resultsDir + os.sep + 'blur_image.jpg', blur_image)
 
+    # Large Gaussian blur (separable) - 1D kernel applied as column then row
+    # Removes lots of detail
+    s, k = 4, 12
+    # Column vector of Gaussian PDF values
+    gauss_1d = np.array([[exp(-z*z/(2*s*s))/sqrt(2*pi*s*s)] for z in range(-k, k+1)], dtype=np.float32)
+    large_blur_image = my_imfilter(test_image, gauss_1d)    # vertical
+    large_blur_image = my_imfilter(large_blur_image, gauss_1d.T)  # horizontal
 
-    '''
-    Large blur
-    This blur would be slow to do directly, so we instead use the fact that Gaussian blurs are separable and blur sequentially in each direction.
-    '''
-    # generate a 1x(2k+1) gaussian kernel with mean=0 and sigma = s, see https://stackoverflow.com/questions/17190649/how-to-obtain-a-gaussian-filter-in-python
-    s, k = 10, 12
-    large_1d_blur_filter = np.asarray(
-        [exp(-z*z/(2*s*s))/sqrt(2*pi*s*s) for z in range(-k, k+1)], dtype=np.float32)
-    large_1d_blur_filter = large_1d_blur_filter.reshape(-1, 1)
-    large_blur_image = my_imfilter(test_image, large_1d_blur_filter)
-    # notice the T operator which transposes the filter
-    large_blur_image = my_imfilter(large_blur_image, large_1d_blur_filter.T)
-    plt.imshow(large_blur_image, cmap='gray')
-    plt.show()
-    done = save_image(resultsDir + os.sep +
-                      'large_blur_image.jpg', large_blur_image)
-
-    # Slow (naive) version of large blur
-    # import time
-    # large_blur_filter = np.dot(large_1d_blur_filter, large_1d_blur_filter.T)
-    # t = time.time()
-    # large_blur_image = my_imfilter(test_image, large_blur_filter);
-    # t = time.time() - t
-    # print('{:f} seconds'.format(t))
-    ##
-
-    '''
-    Oriented filter (Sobel operator)
-    '''
-    sobel_filter = np.asarray([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]],
-                              dtype=np.float32)  # should respond to horizontal gradients
+    # Sobel filter - responds to horizontal changes
+    sobel_filter = np.asarray(
+        [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float32)
     sobel_image = my_imfilter(test_image, sobel_filter)
+    sobel_image = np.clip(sobel_image + 0.5, 0.0, 1.0)  # center around 0.5
 
-    # 0.5 added because the output image is centered around zero otherwise and mostly black
-    sobel_image = np.clip(sobel_image+0.5, 0.0, 1.0)
-    plt.imshow(sobel_image, cmap='gray')
-    plt.show()
-    done = save_image(resultsDir + os.sep + 'sobel_image.jpg', sobel_image)
-
-
-    '''
-    High pass filter (discrete Laplacian)
-    '''
+    # Laplacian filter - responds to blobs
     laplacian_filter = np.asarray(
         [[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
     laplacian_image = my_imfilter(test_image, laplacian_filter)
+    laplacian_image = np.clip(laplacian_image + 0.5, 0.0, 1.0)  # center around 0.5
 
-    # added because the output image is centered around zero otherwise and mostly black
-    laplacian_image = np.clip(laplacian_image+0.5, 0.0, 1.0)
-    plt.figure()
-    plt.imshow(laplacian_image, cmap='gray')
-    plt.show()
-    done = save_image(resultsDir + os.sep + 'laplacian_image.jpg', laplacian_image)
-
-    # High pass "filter" alternative
+    # Original minus blur - lets through detail or 'high frequencies' -> high pass
     high_pass_image = test_image - blur_image
-    high_pass_image = np.clip(high_pass_image+0.5, 0.0, 1.0)
-    plt.figure()
-    plt.imshow(high_pass_image, cmap='gray')
+    high_pass_image = np.clip(high_pass_image + 0.5, 0.0, 1.0)
+
+    # =========================================================================
+    # SAVE RESULTS
+    # =========================================================================
+    save_image(resultsDir + os.sep + 'identity_image.png', identity_image)
+    save_image(resultsDir + os.sep + 'blur_image.png', blur_image)
+    save_image(resultsDir + os.sep + 'large_blur_image.png', large_blur_image)
+    save_image(resultsDir + os.sep + 'sobel_image.png', sobel_image)
+    save_image(resultsDir + os.sep + 'laplacian_image.png', laplacian_image)
+    save_image(resultsDir + os.sep + 'high_pass_image.png', high_pass_image)
+
+    # =========================================================================
+    # DISPLAY ALL RESULTS
+    # =========================================================================
+    results = [
+        ('Input', test_image),
+        ('Identity', identity_image),
+        ('Box Blur (5x5)', blur_image),
+        ('Gaussian Blur (25x25)', large_blur_image),
+        ('Sobel (edges)', sobel_image),
+        ('Laplacian', laplacian_image),
+        ('Original - Box Blur', high_pass_image),
+    ]
+
+    _, axes = plt.subplots(2, 4, figsize=(14, 7))
+    axes = axes.flatten()
+
+    for ax, (title, img) in zip(axes, results):
+        ax.imshow(img, cmap='gray')
+        ax.set_title(title)
+        ax.axis('off')
+
+    # Hide the unused subplot (8th cell)
+    axes[-1].axis('off')
+
+    plt.tight_layout()
     plt.show()
-    done = save_image(resultsDir + os.sep + 'high_pass_image.jpg', high_pass_image)
