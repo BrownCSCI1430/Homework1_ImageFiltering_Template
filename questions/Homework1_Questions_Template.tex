@@ -135,6 +135,109 @@ Consider a situation where we apply two different filters sequentially to an ima
     
 \end{answer}
 
+\pagebreak
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% This is a CSCI 0410/basic ML course knowledge transfer question.
+% Apply what you learned in your intro AI course!
+%
+\begin{question}[points=10,drawbox=false]
+\textbf{Differentiating convolution.} Convolution as an operation is defined only by multiplications and additions of the values within the filter and the image inputs. When interpreting these values as real $\mathbb{R}$ numbers (floating point) and not integers $\mathbb{Z}$, addition and multiplication are smooth functions. Thus, we can analytically differentiate convolution to compute a derivative with respect to its inputs and outputs, such that we can use continuous optimization methods to minimize an objective defined in those terms.
+
+\emph{Of course,} even though we might use continuous values within, discrete convolution is still defined upon the discrete pixel grid---we cannot analytically differentiate with respect to grid size terms, e.g., the kernel width or height, which are still integers. We can only analytically differentiate with respect to the values within the kernel.
+
+So, given a target image and an original image, suppose we wish to find the kernel that produced the target image. Let $T \in \mathbb{R}_{M\times N}$ be the target image, $I \in \mathbb{R}_{M\times N}$ be our original image, and our kernel $f \in \mathbb{R}_{K \times L}$. As a reminder, convolution is defined as:
+$$H = f * I =  \sum_{k,l}{f[k,l]I[m-k,n-l]}$$
+\end{question}
+
+\begin{subquestion}[points=1] 
+Write down a mean-squared error (MSE) loss function $\mathcal{L}$ between the convolved original image and the target, where the mean is over all pixels. Include summation terms over $M, N$ and index pixels with $m, n$.
+\end{subquestion}
+\begin{answer}[height=8]
+$$\mathcal{L} = \frac{1}{MN} \sum_{m=1}^{M} \sum_{n=1}^{N} ((f * I)[m,n] - T[m,n] )^2$$
+$$\mathcal{L} = \frac{1}{MN} \sum_{m=1}^{M} \sum_{n=1}^{N} (H[m,n] - T[m,n] )^2$$
+\end{answer}
+
+\pagebreak
+
+\begin{subquestion}[points=7]
+Next, find an equation for the partial derivative of the MSE loss with respect to one of the filter weights:
+$$\frac{\partial{\mathcal{L}}}{\partial{f[k,l]}}$$
+
+\begin{enumerate}
+\item This will require an application of the chain rule as this derivative depends upon the convolution output $H$. Start here.
+\item As $f[k,l]$ contributes to every pixel in the output $H$ and so every pixel contributes to $\mathcal{L}$, your application must sum the gradients over all output pixels $M, N$.
+\item When differentiating the loss term wrt. $H$, recall that the loss itself is defined as a sum over all pixels---use dummy iterators, e.g., $m',n'$ to keep track. But, we're taking the derivative with respect to a specific pixel location, so what happens at those other locations?
+\end{enumerate}
+\end{subquestion}
+\begin{answer}[height=28]
+\end{answer}
+% Use two answer boxes if it goes over the page
+\begin{answer}[height=47]
+Apply the chain rule:
+$$\frac{\partial{\mathcal{L}}}{\partial{f[k,l]}} = \sum_{m=1}^{M} \sum_{n=1}^{N} \frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} \cdot \frac{\partial{H[m,n]}}{\partial{f[k,l]}}$$
+
+Consider the first term (outer derivative), and substitute the loss into the equation. Note that we must introduce two sets of $m,n$ variables: $m,n$ index the specific pixel we are differentiating with respect to, and $m',n'$ are iterators that cover the whole image to compute the loss.
+$$\frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} = \frac{\partial}{\partial{H[m,n]}} \left[ \frac{1}{MN} \sum_{m'=1}^{M} \sum_{n'=1}^{N} (H[m',n']-T[m',n'])^2 \right] $$
+
+For all entries where $m \neq m'$ and $n \neq n'$, the derivative will be 0---the error at some other pixel does not affect the error at the pixel we care about. Thus, 
+$$\frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} = \frac{\partial}{\partial{H[m,n]}} \left[ \frac{1}{MN} (H[m,n]-T[m,n])^2 \right] $$
+$$\frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} = \frac{2}{MN} (H[m,n]-T[m,n]) $$
+-----
+
+Now consider the second term (inner derivative), and substitute in the equation for convolution. We introduce dummy variables $k',l'$ similarly.
+$$\frac{\partial{H[m,n]}}{\partial{f[k,l]}} = \frac{\partial}{\partial{f[k,l]}} \sum_{k',l'}{f[k',l']I[m-k',n-l']} $$
+
+Again, for all entries where $k \neq k'$ and $l \neq l'$, the derivative is 0. Thus,
+$$\frac{\partial{H[m,n]}}{\partial{f[k,l]}} = \frac{\partial}{\partial{f[k,l]}} {f[k,l]I[m-k,n-l]} $$
+Since $I[m-k,n-l]$ acts as a constant coefficient with respect to $f[k,l]$, the derivative of the product is simply the coefficient:
+$$\frac{\partial{H[m,n]}}{\partial{f[k,l]}} = I[m-k,n-l]$$
+-----
+
+Substituting both terms back in: 
+
+$$\frac{\partial{L}}{\partial{f[k,l]}}= \sum_{m=1}^{M} \sum_{n=1}^{N} \left( \frac{2}{MN} (H[m,n]-T[m,n]) \cdot I[m-k, n-l] \right)$$
+\end{answer}
+
+\pagebreak
+
+\begin{subquestion}[points=2]
+Given what we've learned about filtering so far, provide an interpretation of your definition of $\frac{\partial{L}}{\partial{f[k,l]}}$. What is it?
+\end{subquestion}
+
+\begin{answer}
+This has a clean interpretation: the gradient for convolution MSE at a kernel pixel location \emph{is} the correlation (or cross-correlation) between the (scaled) error map and the input image shifted by that kernel pixel location offset. This can be more easily seen if we think about $H, T, I$ as whole matrices `outside' the summation rather than as individual pixels inside it. $I$ is offset by $k,l$, and is correlated with the (scaled) error $H-T$.
+\end{answer}
+
+\pagebreak
+
+Convolution with an MSE loss is convex: MSE is a sum of squares (parabola, with a single valley), and since convolution is a linear operator it can only stretch or rotate the parabola. Convolution can never create a `second valley' within this parabola.
+
+Seeing convolution as a linear operator provides additional interpretations. Suppose we again wish to recover a kernel $f$ given a target and original image, but our input or target image had noise. We could form linear systems like $Ax = b$ to solve least squares regression problems that find a kernel of best fit.
+
+$$f * I = \sum_{k,l}{f[k,l]I[m-k,n-l]} = Ax = T$$
+
+Each row of $A$ would be a 2D patch of $I$ that have been flattened, such that $A \in \mathbb{R}^{(m \cdot n) \times (k \cdot l)} $. $x$ would be the flattening of $f$ into a column vector, and $b$ would be the corresponding flattening of $T$ into a vector, such that multiplication $Ax$ produces the result of the convolution $T$ in its corresponding vector of elements $b$.
+
+\begin{subquestion}[points=2]
+Write pseudocode that creates matrix A.
+\end{subquestion}
+
+\begin{answer}[height=12]
+\begin{python}
+for m in range(H):
+    for n in range(W):
+        # flatten patch 
+        patch = I[m:m+K, n:n+L].flatten()
+        # set row to equal the patch 
+        A[row, :] = patch
+        row += 1
+\end{python}
+\end{answer}
+
+
+
+
 \pagebreak % Please leave the page break
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -165,103 +268,6 @@ How might we fix this issue with filtering? Describe the process, and explain wh
 \begin{answer}[height=8]
 
 \end{answer}
-
-\pagebreak % Please leave the page break
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{question}[points=7,drawbox=false]
-With filtering, we can remove different frequencies of information from an image, or let them `pass through' to the output. Which kind of filter produced these outputs?
-\end{question}
-
-\raisebox{\baselineskip-\height}{\includegraphics[width=0.5\textwidth,height=7cm,keepaspectratio]{images/q3img0.png}}
-
-\begin{subsubquestion}[points=2]
-Output image 1:\\
-\includegraphics[width=0.6\textwidth,height=7cm,keepaspectratio]{images/q3img1.png}
-\end{subsubquestion}
-
-\begin{answerlist}
-% Remember: use \item[\done] to mark an answer.
-    \item High pass
-    \item Low pass
-\end{answerlist}
-
-\begin{subsubquestion}[points=2]
-Output image 2 (adjusted for easier visualization):\\
-\includegraphics[width=0.6\textwidth,height=7cm,keepaspectratio]{images/q3img2.png}
-\end{subsubquestion}
-
-\begin{answerlist}
-    \item High pass
-    \item Low pass
-\end{answerlist}
-
-\pagebreak
-
-\begin{subquestion}[points=3]
-Which of the following kernels is high pass, low pass, or neither?
-\end{subquestion}
-
-\emph{Note:} To fill in boxes, replace `\textbackslash square' with `\textbackslash blacksquare' for your answer.
-
-\begin{enumerate}[(i)]
-\item
- $\begin{bmatrix}
-    1 & 0 & -1 \\
-    1 & 0 & -1 \\
-    1 & 0 & -1 \\
- \end{bmatrix}$
-
-\begin{answerlist}
-    % Remember: use \item[\done] to mark an answer.
-    \item High pass
-    \item Low pass
-    \item Neither
-\end{answerlist}
-
-\item
- $\begin{bmatrix}
-    \frac{1}{9} & \frac{1}{9} & \frac{1}{9} \\
-    \frac{1}{9} & \frac{1}{9} & \frac{1}{9} \\
-    \frac{1}{9} & \frac{1}{9} & \frac{1}{9}
- \end{bmatrix}$
-
- \begin{answerlist}
-    % Remember: use \item[\done] to mark an answer.
-    \item High pass
-    \item Low pass
-    \item Neither
-\end{answerlist}
-
-\item
-$\begin{bmatrix}
-    -\frac{1}{9} & -\frac{1}{9} & -\frac{1}{9} \\
-    -\frac{1}{9} & \frac{8}{9} & -\frac{1}{9} \\
-    -\frac{1}{9} & -\frac{1}{9} & -\frac{1}{9}
-\end{bmatrix}$
-
-\begin{answerlist}
-    % Remember: use \item[\done] to mark an answer.
-    \item High pass
-    \item Low pass
-    \item Neither
-\end{answerlist}
-
-\end{enumerate}
-
-\pagebreak
-
-\begin{subquestion}[points=2]
-Which of the following statements are true?
-\end{subquestion}
-
-\begin{answerlist}
-\item High pass filter kernels will always contain at least one negative number
-\item A Gaussian filter is an example of a low pass filter
-\item A high pass filter is the basis for most smoothing methods
-\item In a high pass filter, the center of the kernel must have the highest value
-\end{answerlist}
-
 
 \pagebreak
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -315,12 +321,12 @@ Does the C2PA system weaken Grundberg's argument? \textbf{[1--2 sentences]}
 \end{answer}
 
 \pagebreak
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\begin{question}[points=7,drawbox=false]
-\textbf{Technical practice.} In computer vision, each image is a matrix of pixels. The \texttt{numpy} library provides fast computation with large multi-dimensional vectors and matrices. 
+\begin{question}[points=0,drawbox=false]
+\textbf{Technical practice (optional).} In computer vision, each image is a matrix of pixels. The \texttt{numpy} library provides fast computation with large multi-dimensional vectors and matrices. 
 
-To familiarize yourself with the library, read through the following scenarios and complete the exercises. Write \emph{one} \texttt{numpy} function to complete each of the following tasks.
+To familiarize yourself with the library, read through the following scenarios and complete the exercises. It is possible to use \emph{one} \texttt{numpy} function to complete each of the following tasks.
 
 With \texttt{numpy} imported as
 \begin{verbatim}
@@ -335,7 +341,7 @@ Test out your answers by creating your own python program. Some functions you mi
 Use operators like \texttt{[]} and \texttt{:}, but remember that each prompt can be completed with only \textit{one} function/operator shorthand.
 \end{question}
 
-\begin{subquestion}[points=1]
+\begin{subquestion}
 Create a black image \texttt{img} with all values in this matrix equal to 0, where \texttt{np.shape(img) == (320,640)}.
 \end{subquestion}
     
@@ -345,7 +351,7 @@ Create a black image \texttt{img} with all values in this matrix equal to 0, whe
 \end{python}
 \end{answer}
     
-\begin{subquestion}[points=1]
+\begin{subquestion}
 Assume we have a 2D matrix \texttt{img} with values range [-1.0, 1.0]. Clip \texttt{img} so that all its values lie within the range [-0.5, 0.5].
 \end{subquestion}
 
@@ -357,7 +363,7 @@ Assume we have a 2D matrix \texttt{img} with values range [-1.0, 1.0]. Clip \tex
 
 \pagebreak
 
-\begin{subquestion}[points=1]
+\begin{subquestion}
 A malformed filter operation has messed up the output dimensions, producing a variable \texttt{img\_out} where \texttt{np.shape(img\_out) == (1, 1, 320, 640)}. Remove all 1-sized dimensions. Convert \texttt{img\_out} to a new matrix \texttt{img\_fixed} where \texttt{np.shape(img\_fixed) == (320, 640)}.
 \end{subquestion}
 
@@ -369,7 +375,7 @@ A malformed filter operation has messed up the output dimensions, producing a va
 
 Color images are represented with a three dimensional matrix, where often the third dimension represents spectral information. The presence of a third dimension or the size of the color dimension could help us to identify whether an image is color (RGB) or grayscale.
 
-\begin{subquestion}[points=1]
+\begin{subquestion}
 Say you have a grayscale image \texttt{img} where \texttt{np.shape(img) == (320, 640)}. Convert this to a new image \texttt{img\_expanded} where \texttt{np.shape(img\_expanded) == (320, 640, 1)}. In other words, add a 1-sized dimension to \texttt{img}.
 \end{subquestion}
 
@@ -379,7 +385,7 @@ Say you have a grayscale image \texttt{img} where \texttt{np.shape(img) == (320,
 \end{python}
 \end{answer}
     
-\begin{subquestion}[points=1]
+\begin{subquestion}
 Suppose we have an RGB image matrix, \texttt{img}, of shape (320, 640, 3). Retrieve the third blue channel of the image while preserving all of \texttt{img}'s dimensions and intensity values.
 \end{subquestion}
     
@@ -391,7 +397,7 @@ Suppose we have an RGB image matrix, \texttt{img}, of shape (320, 640, 3). Retri
 
 \pagebreak
 
-\begin{subquestion}[points=1]
+\begin{subquestion}
 Suppose we have a second RGB image matrix, \texttt{img2}, also of shape (320, 640, 3). Retrieve the red and blue channels of \texttt{img2} within a single variable of shape (320, 640, 2).
 \end{subquestion}
     
@@ -401,7 +407,7 @@ Suppose we have a second RGB image matrix, \texttt{img2}, also of shape (320, 64
 \end{python}
 \end{answer}
     
-\begin{subquestion}[points=1]
+\begin{subquestion}
 Padding is a useful operation to help us produce a convolved image equal in size to an input image. Given an RGB image, \texttt{img} of (320, 640, 3), pad it with two columns of zeros on the left and right edges of the image, and three rows of zeros on the top and bottom edges of the image. Do not add zero padding to the color dimension.
 \end{subquestion}
     
@@ -412,7 +418,8 @@ Padding is a useful operation to help us produce a convolved image equal in size
 \end{answer}
 
 \pagebreak
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \writefeedback
 
