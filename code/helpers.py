@@ -40,6 +40,9 @@ def load_image(path):
     return img_as_float32(io.imread(path))
 
 def save_image(path, im):
+    # input to img_as_ubyte must have values between -1 and 1 if type float
+    # (although, in our case, they should be between 0 and 1)
+    im = np.clip(im, -1.0, 1.0)
     return io.imsave(path, img_as_ubyte(im.copy()))
 
 # given two differently sized images, resize them so they have the same shape
