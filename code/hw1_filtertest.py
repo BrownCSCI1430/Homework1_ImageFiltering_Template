@@ -1,10 +1,8 @@
-# Homework 1 Image Filtering - Tests on my_imfilter function
-# Based on previous and current work
-# by James Hays for CSCI 1430 @ Brown and
-# CS 4495/6476 @ Georgia Tech
+# CSCI 1430
+# Homework 1 Image Filtering
+#
 import os
 import numpy as np
-from numpy import pi, exp, sqrt
 import matplotlib.pyplot as plt
 from helpers import load_image, save_image
 from student import my_imfilter
@@ -14,9 +12,9 @@ This function loads an image, and then attempts to filter that image
 using different kernels as a testing routine.
 """
 def filter_test(img_path):
-    resultsDir = '..' + os.sep + 'results'
-    if not os.path.exists(resultsDir):
-        os.mkdir(resultsDir)
+    results_dir = '..' + os.sep + 'results'
+    if not os.path.exists(results_dir):
+        os.mkdir(results_dir)
 
     # =========================================================================
     # LOAD IMAGE
@@ -40,7 +38,7 @@ def filter_test(img_path):
     # Removes lots of detail
     s, k = 4, 12
     # Column vector of Gaussian PDF values
-    gauss_1d = np.array([[exp(-z*z/(2*s*s))/sqrt(2*pi*s*s)] for z in range(-k, k+1)], dtype=np.float32)
+    gauss_1d = np.array([[np.exp(-z*z/(2*s*s))/np.sqrt(2*np.pi*s*s)] for z in range(-k, k+1)], dtype=np.float32)
     large_blur_image = my_imfilter(test_image, gauss_1d)    # vertical
     large_blur_image = my_imfilter(large_blur_image, gauss_1d.T)  # horizontal
 
@@ -63,12 +61,12 @@ def filter_test(img_path):
     # =========================================================================
     # SAVE RESULTS
     # =========================================================================
-    save_image(resultsDir + os.sep + 'identity_image.png', identity_image)
-    save_image(resultsDir + os.sep + 'blur_image.png', blur_image)
-    save_image(resultsDir + os.sep + 'large_blur_image.png', large_blur_image)
-    save_image(resultsDir + os.sep + 'sobel_image.png', sobel_image)
-    save_image(resultsDir + os.sep + 'laplacian_image.png', laplacian_image)
-    save_image(resultsDir + os.sep + 'high_pass_image.png', high_pass_image)
+    save_image(results_dir + os.sep + 'identity_image.png', identity_image)
+    save_image(results_dir + os.sep + 'blur_image.png', blur_image)
+    save_image(results_dir + os.sep + 'large_blur_image.png', large_blur_image)
+    save_image(results_dir + os.sep + 'sobel_image.png', sobel_image)
+    save_image(results_dir + os.sep + 'laplacian_image.png', laplacian_image)
+    save_image(results_dir + os.sep + 'high_pass_image.png', high_pass_image)
 
     # =========================================================================
     # DISPLAY ALL RESULTS
