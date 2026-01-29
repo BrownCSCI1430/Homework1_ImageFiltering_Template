@@ -55,6 +55,7 @@ def hybrid_img_generation(img_one_path, img_two_path):
     """
     
     ## Hybrid Image Construction ##
+    #
     # cutoff_frequency is the standard deviation, in pixels, of the Gaussian
     # blur that will remove high frequencies. You may tune this per image pair
     # to achieve better results.
@@ -90,6 +91,8 @@ def hybrid_img_generation(img_one_path, img_two_path):
     plt.tight_layout()
     plt.show()
 
+    ## Save outputs ##
+    #
     save_image('../results/low_frequencies.png', low_frequencies)
     out_high = np.clip(high_frequencies + 0.5, 0.0, 1.0)
     save_image('../results/high_frequencies.png', out_high)

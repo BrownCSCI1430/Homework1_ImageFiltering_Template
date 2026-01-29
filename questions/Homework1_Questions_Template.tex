@@ -154,8 +154,7 @@ $$H = f * I =  \sum_{k,l}{f[k,l]I[m-k,n-l]}$$
 Write down a mean-squared error (MSE) loss function $\mathcal{L}$ between the convolved original image and the target, where the mean is over all pixels. Include summation terms over $M, N$ and index pixels with $m, n$.
 \end{subquestion}
 \begin{answer}[height=8]
-$$\mathcal{L} = \frac{1}{MN} \sum_{m=1}^{M} \sum_{n=1}^{N} ((f * I)[m,n] - T[m,n] )^2$$
-$$\mathcal{L} = \frac{1}{MN} \sum_{m=1}^{M} \sum_{n=1}^{N} (H[m,n] - T[m,n] )^2$$
+
 \end{answer}
 
 \pagebreak
@@ -170,33 +169,13 @@ $$\frac{\partial{\mathcal{L}}}{\partial{f[k,l]}}$$
 \item When differentiating the loss term wrt. $H$, recall that the loss itself is defined as a sum over all pixels---use dummy iterators, e.g., $m',n'$ to keep track. But, we're taking the derivative with respect to a specific pixel location, so what happens at those other locations?
 \end{enumerate}
 \end{subquestion}
-\begin{answer}[height=28]
-\end{answer}
+
 % Use two answer boxes if it goes over the page
+\begin{answer}[height=28]
+
+\end{answer}
 \begin{answer}[height=47]
-Apply the chain rule:
-$$\frac{\partial{\mathcal{L}}}{\partial{f[k,l]}} = \sum_{m=1}^{M} \sum_{n=1}^{N} \frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} \cdot \frac{\partial{H[m,n]}}{\partial{f[k,l]}}$$
 
-Consider the first term (outer derivative), and substitute the loss into the equation. Note that we must introduce two sets of $m,n$ variables: $m,n$ index the specific pixel we are differentiating with respect to, and $m',n'$ are iterators that cover the whole image to compute the loss.
-$$\frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} = \frac{\partial}{\partial{H[m,n]}} \left[ \frac{1}{MN} \sum_{m'=1}^{M} \sum_{n'=1}^{N} (H[m',n']-T[m',n'])^2 \right] $$
-
-For all entries where $m \neq m'$ and $n \neq n'$, the derivative will be 0---the error at some other pixel does not affect the error at the pixel we care about. Thus, 
-$$\frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} = \frac{\partial}{\partial{H[m,n]}} \left[ \frac{1}{MN} (H[m,n]-T[m,n])^2 \right] $$
-$$\frac{\partial{\mathcal{L}}}{\partial{H[m,n]}} = \frac{2}{MN} (H[m,n]-T[m,n]) $$
------
-
-Now consider the second term (inner derivative), and substitute in the equation for convolution. We introduce dummy variables $k',l'$ similarly.
-$$\frac{\partial{H[m,n]}}{\partial{f[k,l]}} = \frac{\partial}{\partial{f[k,l]}} \sum_{k',l'}{f[k',l']I[m-k',n-l']} $$
-
-Again, for all entries where $k \neq k'$ and $l \neq l'$, the derivative is 0. Thus,
-$$\frac{\partial{H[m,n]}}{\partial{f[k,l]}} = \frac{\partial}{\partial{f[k,l]}} {f[k,l]I[m-k,n-l]} $$
-Since $I[m-k,n-l]$ acts as a constant coefficient with respect to $f[k,l]$, the derivative of the product is simply the coefficient:
-$$\frac{\partial{H[m,n]}}{\partial{f[k,l]}} = I[m-k,n-l]$$
------
-
-Substituting both terms back in: 
-
-$$\frac{\partial{L}}{\partial{f[k,l]}}= \sum_{m=1}^{M} \sum_{n=1}^{N} \left( \frac{2}{MN} (H[m,n]-T[m,n]) \cdot I[m-k, n-l] \right)$$
 \end{answer}
 
 \pagebreak
@@ -205,8 +184,8 @@ $$\frac{\partial{L}}{\partial{f[k,l]}}= \sum_{m=1}^{M} \sum_{n=1}^{N} \left( \fr
 With respect to a kind of filtering that we've learned about, what is the interpretation of your definition of $\frac{\partial{L}}{\partial{f[k,l]}}$?
 \end{subquestion}
 
-\begin{answer}
-This has a clean interpretation: the gradient for convolution MSE at a kernel pixel location \emph{is} the correlation (or cross-correlation) between the (scaled) error map and the input image shifted by that kernel pixel location offset. This can be more easily seen if we think about $H, T, I$ as whole matrices `outside' the summation rather than as individual pixels inside it. $I$ is offset by $k,l$, and is correlated with the (scaled) error $H-T$.
+\begin{answer}[height=8]
+
 \end{answer}
 
 \pagebreak
@@ -225,13 +204,7 @@ Write pseudocode that creates matrix A.
 
 \begin{answer}[height=12]
 \begin{python}
-for m in range(H):
-    for n in range(W):
-        # flatten patch 
-        patch = I[m:m+K, n:n+L].flatten()
-        # set row to equal the patch 
-        A[row, :] = patch
-        row += 1
+# PSEUDOCODE HERE
 \end{python}
 \end{answer}
 
@@ -298,7 +271,7 @@ For a news picture, are any digital manipulations permissible? If so, how do we 
     
 \pagebreak
 
-The Coalition for Content Provenance and Authenticity (C2PA) has designed a technical specification to attach history to an image. Please watch \href{https://www.youtube.com/watch?v=hA0ZjqakEF8}{this video} for an overview; stop at 4 minutes and 40 seconds.
+The Coalition for Content Provenance and Authenticity (C2PA) has designed a technical specification to attach history to an image. This is now being implemented across the media pipline: e.g., in Canon cameras, Adobe editing products, and on Web browsers. Please watch \href{https://www.youtube.com/watch?v=hA0ZjqakEF8}{this video} for an overview; stop at 4 minutes and 40 seconds.
 
 For context, a stakeholder of a system is identified as a person or group who has an explicit interest or concern in the system itself, its operations, and its consequences.
     
@@ -318,103 +291,6 @@ Does the C2PA system weaken Grundberg's argument? \textbf{[1--2 sentences]}
 
 \begin{answer}[height=8]
 
-\end{answer}
-
-\pagebreak
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\begin{question}[points=0,drawbox=false]
-\textbf{Technical practice (optional).} In computer vision, each image is a matrix of pixels. The \texttt{numpy} library provides fast computation with large multi-dimensional vectors and matrices. 
-
-To familiarize yourself with the library, read through the following scenarios and complete the exercises. It is possible to use \emph{one} \texttt{numpy} function to complete each of the following tasks.
-
-With \texttt{numpy} imported as
-\begin{verbatim}
-    import numpy as np
-\end{verbatim}
-we can call functions with 
-\begin{verbatim}
-    np.function_name(<arguments>)
-\end{verbatim}
-Test out your answers by creating your own python program. Some functions you might find useful are \href{https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html}{np.squeeze}, \href{https://numpy.org/doc/stable/reference/generated/numpy.expand_dims.html}{np.expand\_dims}, \href{https://numpy.org/doc/stable/reference/generated/numpy.clip.html}{np.clip}, \href{https://numpy.org/doc/stable/reference/generated/numpy.pad.html}{np.pad}, and \href{https://numpy.org/doc/stable/reference/generated/numpy.zeros.html}{np.zeros}.
-
-Use operators like \texttt{[]} and \texttt{:}, but remember that each prompt can be completed with only \textit{one} function/operator shorthand.
-\end{question}
-
-\begin{subquestion}
-Create a black image \texttt{img} with all values in this matrix equal to 0, where \texttt{np.shape(img) == (320,640)}.
-\end{subquestion}
-    
-\begin{answer}
-\begin{python}
-# TODO: Your expression here
-\end{python}
-\end{answer}
-    
-\begin{subquestion}
-Assume we have a 2D matrix \texttt{img} with values range [-1.0, 1.0]. Clip \texttt{img} so that all its values lie within the range [-0.5, 0.5].
-\end{subquestion}
-
-\begin{answer}
-\begin{python}
-# TODO: Your expression here
-\end{python}
-\end{answer}
-
-\pagebreak
-
-\begin{subquestion}
-A malformed filter operation has messed up the output dimensions, producing a variable \texttt{img\_out} where \texttt{np.shape(img\_out) == (1, 1, 320, 640)}. Remove all 1-sized dimensions. Convert \texttt{img\_out} to a new matrix \texttt{img\_fixed} where \texttt{np.shape(img\_fixed) == (320, 640)}.
-\end{subquestion}
-
-\begin{answer}
-\begin{python}
-# TODO: Your expression here
-\end{python}
-\end{answer}
-
-Color images are represented with a three dimensional matrix, where often the third dimension represents spectral information. The presence of a third dimension or the size of the color dimension could help us to identify whether an image is color (RGB) or grayscale.
-
-\begin{subquestion}
-Say you have a grayscale image \texttt{img} where \texttt{np.shape(img) == (320, 640)}. Convert this to a new image \texttt{img\_expanded} where \texttt{np.shape(img\_expanded) == (320, 640, 1)}. In other words, add a 1-sized dimension to \texttt{img}.
-\end{subquestion}
-
-\begin{answer}
-\begin{python}
-# TODO: Your expression here
-\end{python}
-\end{answer}
-    
-\begin{subquestion}
-Suppose we have an RGB image matrix, \texttt{img}, of shape (320, 640, 3). Retrieve the third blue channel of the image while preserving all of \texttt{img}'s dimensions and intensity values.
-\end{subquestion}
-    
-\begin{answer}
-\begin{python}
-# TODO: Your expression here
-\end{python}
-\end{answer}
-
-\pagebreak
-
-\begin{subquestion}
-Suppose we have a second RGB image matrix, \texttt{img2}, also of shape (320, 640, 3). Retrieve the red and blue channels of \texttt{img2} within a single variable of shape (320, 640, 2).
-\end{subquestion}
-    
-\begin{answer}
-\begin{python}
-# TODO: Your expression here
-\end{python}
-\end{answer}
-    
-\begin{subquestion}
-Padding is a useful operation to help us produce a convolved image equal in size to an input image. Given an RGB image, \texttt{img} of (320, 640, 3), pad it with two columns of zeros on the left and right edges of the image, and three rows of zeros on the top and bottom edges of the image. Do not add zero padding to the color dimension.
-\end{subquestion}
-    
-\begin{answer}
-\begin{python}
-# TODO: Your expression here
-\end{python}
 \end{answer}
 
 \pagebreak
