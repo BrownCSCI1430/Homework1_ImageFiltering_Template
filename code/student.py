@@ -10,7 +10,7 @@ def my_imfilter(image, filter, pad_mode='constant'):
 
     Inputs:
         image: numpy nd-array of dim (m, n) or (m, n, c)
-        filter: numpy nd-array of dim (k, k)
+        filter: numpy nd-array of odd dims (k, l)
         pad_mode: padding mode for np.pad. Options include:
             'constant' - pad with zeros
             'edge'     - pad with edge values
@@ -38,7 +38,7 @@ def my_imfilter_fft(image, filter, pad_mode='constant'):
 
     Inputs:
         image: numpy nd-array of dim (m, n) or (m, n, c)
-        filter: numpy nd-array of dim (k, k)
+        filter: numpy nd-array of odd dims (k, l)
         pad_mode: padding mode for np.pad. Options include:
             'constant' - pad with zeros (default)
             'edge'     - pad with edge values
