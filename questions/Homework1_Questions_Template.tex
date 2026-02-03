@@ -145,8 +145,8 @@ Consider a situation where we apply two different filters sequentially to an ima
 
 \emph{Of course,} even though we might use continuous values within, discrete convolution is still defined upon the discrete pixel grid---we cannot analytically differentiate with respect to grid size terms, e.g., the kernel width or height, which are still integers. We can only analytically differentiate with respect to the values within the kernel.
 
-So, given a target image and an original image, suppose we wish to find the kernel that produced the target image. Let $T \in \mathbb{R}_{M\times N}$ be the target image, $I \in \mathbb{R}_{M\times N}$ be our original image, and our kernel $f \in \mathbb{R}_{K \times L}$. As a reminder, convolution is defined as:
-$$H = f * I =  \sum_{k,l}{f[k,l]I[m-k,n-l]}$$
+So, given a target image and an original image, suppose we wish to find the kernel that produced the target image. Let $T \in \mathbb{R}^{M\times N}$ be the target image, $I \in \mathbb{R}^{M\times N}$ be our original image, and our kernel $f \in \mathbb{R}^{K \times L}$. As a reminder, convolution is defined as:
+$$H[m,n] = (f * I)[m,n] = \sum_{k,l}{f[k,l]I[m-k,n-l]}$$
 \end{question}
 
 \begin{subquestion}[points=1] 
@@ -181,7 +181,7 @@ Please show your working.
 \pagebreak
 
 \begin{subquestion}[points=2]
-With respect to a kind of filtering that we've learned about, what is the interpretation of your definition of $\frac{\partial{L}}{\partial{f[k,l]}}$?
+With respect to a kind of filtering that we've learned about, what is the interpretation of your definition of $\frac{\partial{\mathcal{L}}}{\partial{f[k,l]}}$?
 \end{subquestion}
 
 \begin{answer}[height=8]
@@ -190,13 +190,11 @@ With respect to a kind of filtering that we've learned about, what is the interp
 
 \pagebreak
 
-Convolution with an MSE loss is convex: MSE is a sum of squares (parabola, with a single valley), and since convolution is a linear operator it can only stretch or rotate the parabola. Convolution can never create a `second valley' within this parabola.
+Convolution with an MSE loss is convex: MSE is a sum of squares (a high-dimensional or hyper-paraboloid, or `quadratic bowl', with a single valley). Since convolution is a linear operator it can only stretch or rotate the paraboloid. Convolution can never create a `second valley' within this paraboloid.
 
 Seeing convolution as a linear operator provides additional interpretations. Suppose we again wish to recover a kernel $f$ given a target and original image, but our input or target image had noise. We could form linear systems like $Ax = b$ to solve least squares regression problems that find a kernel of best fit.
 
-$$f * I = \sum_{k,l}{f[k,l]I[m-k,n-l]} = Ax = T$$
-
-Each row of $A$ would be a 2D patch of $I$ that have been flattened, such that $A \in \mathbb{R}^{(m \cdot n) \times (k \cdot l)} $. $x$ would be the flattening of $f$ into a column vector, and $b$ would be the corresponding flattening of $T$ into a vector, such that multiplication $Ax$ produces the result of the convolution $T$ in its corresponding vector of elements $b$.
+Each row of $A$ would be a 2D patch of $I$ that has been flattened, such that $A \in \mathbb{R}^{(M \cdot N) \times (K \cdot L)} $. $x$ would be the flattening of $f$ into a column vector, and $b$ would be the corresponding flattening of $T$ into a vector, such that the matrix-vector product $Ax$ yields the flattened convolution output $b$.
 
 \begin{subquestion}[points=2]
 Write pseudocode that creates matrix A.
