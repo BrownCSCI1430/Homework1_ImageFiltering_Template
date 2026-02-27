@@ -1,3 +1,16 @@
+# Homework X – Reslog
+
+Write your responses in the space below.
+Do NOT edit below the divider line.
+
+
+
+
+
+
+
+
+---
 # CSCI 1430 Results Log
 
 This log help us to grade your work; it is not a report or write up.
